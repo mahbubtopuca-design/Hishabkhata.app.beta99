@@ -399,12 +399,13 @@ function renderSheetBody(type){
       <div class="field"><label class="field-label">পার্টির নাম *</label><input class="inp" id="f_party" placeholder="গ্রাহক / সরবরাহকারী"/></div>
       <div class="frow">
         <div class="field"><label class="field-label">পরিমাণ ৳ *</label><input class="inp" type="number" id="f_amount" placeholder="0.00" inputmode="decimal"/></div>
-        <div class="field"><label class="field-label">তারিখ</label><input class="inp" type="date" id="f_date" value="${today()}"/></div>
+        <div class="field"><label class="field-label">ফোন নম্বর 📱</label><input class="inp" type="tel" id="f_phone" placeholder="01XXXXXXXXX" inputmode="tel"/></div>
       </div>
       <div class="frow">
+        <div class="field"><label class="field-label">তারিখ</label><input class="inp" type="date" id="f_date" value="${today()}"/></div>
         <div class="field"><label class="field-label">বকেয়া তারিখ</label><input class="inp" type="date" id="f_due"/></div>
-        <div class="field"><label class="field-label">নোট</label><input class="inp" id="f_note" placeholder="ঐচ্ছিক..."/></div>
       </div>
+      <div class="field"><label class="field-label">নোট</label><input class="inp" id="f_note" placeholder="ঐচ্ছিক..."/></div>
       <button class="btn btn-full" style="background:${color};color:#fff;margin-top:4px" onclick="saveParty('${type}')">সংরক্ষণ করুন ✓</button>`;
   }
   else if(type==='inventory'){
@@ -534,10 +535,31 @@ function saveParty(type){
   const party=document.getElementById('f_party')?.value?.trim();
   const amount=parseFloat(document.getElementById('f_amount')?.value);
   if(!party||!amount){alert('পার্টির নাম ও পরিমাণ দিন');return;}
-  const item={id:uid(),party,amount,date:document.getElementById('f_date')?.value,dueDate:document.getElementById('f_due')?.value||'',note:document.getElementById('f_note')?.value||'',settled:false};
+  const item={id:uid(),party,amount,phone:document.getElementById('f_phone')?.value?.trim()||'',date:document.getElementById('f_date')?.value,dueDate:document.getElementById('f_due')?.value||'',note:document.getElementById('f_note')?.value||'',settled:false};
   if(type==='receivable') receivable.unshift(item); else payable.unshift(item);
   save(); closeSheet(); renderContent(); updateTopbarNet();
   showToast('সংরক্ষিত হয়েছে ✓');
+}
+
+// ── NOTIFICATION FUNCTIONS ─────────────────────────────────────
+function sendWhatsApp(phone, party, amount, dueDate, type){
+  const shopName=localStorage.getItem('dk_shop')||'আমার দোকান';
+  const typeText=type==='receivable'?'বাকি পাওনা':'বাকি দেনা';
+  const msg=`🛒 *${shopName}*\n\nপ্রিয় *${party}*,\n\nআপনার কাছে *৳${Number(amount).toLocaleString('en-BD')}* টাকা ${typeText} আছে।${dueDate?'\nপরিশোধের তারিখ: *'+dueDate+'*':''}\n\nঅনুগ্রহ করে দ্রুত পরিশোধ করুন।\n\nধন্যবাদ 🙏`;
+  // Format BD number: remove leading 0, add 880
+  let num=phone.replace(/\D/g,'');
+  if(num.startsWith('0')) num='880'+num.slice(1);
+  if(!num.startsWith('880')) num='880'+num;
+  const url=`https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
+}
+
+function sendSMS(phone, party, amount, dueDate, type){
+  const shopName=localStorage.getItem('dk_shop')||'আমার দোকান';
+  const typeText=type==='receivable'?'বাকি পাওনা':'বাকি দেনা';
+  const msg=`${shopName}: প্রিয় ${party}, আপনার কাছে ${Number(amount).toLocaleString('en-BD')} টাকা ${typeText} আছে।${dueDate?' পরিশোধের তারিখ: '+dueDate+'.':''} অনুগ্রহ করে দ্রুত পরিশোধ করুন। ধন্যবাদ।`;
+  let num=phone.replace(/\D/g,'');
+  window.open(`sms:${num}?body=${encodeURIComponent(msg)}`,'_self');
 }
 function saveInventory(){
   const name=document.getElementById('f_name')?.value?.trim();
@@ -585,19 +607,32 @@ function updateBadge(){
 function txTable(rows,color,type){
   if(!rows.length) return`<div style="text-align:center;color:var(--sub);padding:20px;font-size:13px">কোনো রেকর্ড নেই</div>`;
   const showSettle=type==='receivable'||type==='payable';
-  return`<div class="tbl-wrap"><table>
-    <thead><tr><th>তারিখ</th><th>পরিমাণ</th><th>বিভাগ/পার্টি</th>${showSettle?'<th>স্ট্যাটাস</th>':''}<th></th></tr></thead>
-    <tbody>${rows.map(r=>`<tr>
-      <td style="color:var(--sub);font-size:11px;white-space:nowrap">${r.date}</td>
-      <td style="font-weight:800;color:${color};white-space:nowrap">${BDT(r.amount)}</td>
-      <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.category||r.party||'—'}</td>
-      ${showSettle?`<td>${chip(r.settled?'পরিশোধ':'বাকি',r.settled?'#3fb950':'#d29922',r.settled?'#1a3a1a':'#2a2000')}</td>`:''}
-      <td style="text-align:right;white-space:nowrap">
-        ${showSettle&&!r.settled?`<button class="btn btn-sm" style="background:#1a3a1a;color:#3fb950;margin-right:4px" onclick="settleItem('${r.id}','${type}')">✓</button>`:''}
-        <button class="btn btn-sm" style="background:#3a1a1a;color:#f85149" onclick="deleteItem('${r.id}','${type}')">✕</button>
-      </td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
+  return rows.map(r=>{
+    const hasPhone=r.phone&&r.phone.length>6;
+    return`<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-weight:700;font-size:14px;color:var(--text)">${r.party||r.category||'—'}</div>
+          ${r.phone?`<div style="font-size:11px;color:var(--sub);margin-top:2px">📱 ${r.phone}</div>`:''}
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">📅 ${r.date}${r.dueDate?' · বকেয়া: '+r.dueDate:''}</div>
+          ${r.note?`<div style="font-size:11px;color:var(--sub);margin-top:2px">📝 ${r.note}</div>`:''}
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:900;font-size:16px;color:${color}">${BDT(r.amount)}</div>
+          ${showSettle?`<div style="margin-top:4px">${chip(r.settled?'পরিশোধ':'বাকি',r.settled?'#3fb950':'#d29922',r.settled?'#1a3a1a':'#2a2000')}</div>`:''}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:${showSettle&&!r.settled?(hasPhone?'1fr 1fr 1fr 1fr':'1fr 1fr'):'1fr 1fr'};gap:6px">
+        ${showSettle&&!r.settled?`<button class="btn btn-sm" style="background:#1a3a1a;color:#3fb950" onclick="settleItem('${r.id}','${type}')">✓ পরিশোধ</button>`:''}
+        ${showSettle&&!r.settled&&hasPhone?`
+          <button class="btn btn-sm" style="background:#1a2e00;color:#25d366;border:1px solid #25d366" onclick="sendWhatsApp('${r.phone}','${r.party}',${r.amount},'${r.dueDate||''}','${type}')">📱 WhatsApp</button>
+          <button class="btn btn-sm" style="background:#001a2e;color:#58a6ff;border:1px solid #58a6ff" onclick="sendSMS('${r.phone}','${r.party}',${r.amount},'${r.dueDate||''}','${type}')">💬 SMS</button>
+        `:''}
+        ${!showSettle||r.settled?`<div></div>`:''}
+        <button class="btn btn-sm" style="background:#3a1a1a;color:#f85149" onclick="deleteItem('${r.id}','${type}')">✕ মুছুন</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function filterRows(arr){return arr.filter(r=>!searchVal||Object.values(r).some(v=>String(v).toLowerCase().includes(searchVal.toLowerCase())));}
