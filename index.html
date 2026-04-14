@@ -379,7 +379,7 @@ function updateTopbar(){
 }
 function showToast(msg,bg='#16a34a'){const t=document.getElementById('toast');t.textContent=msg;t.style.background=bg;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2400);}
 
-let currentTab='home',currentFilter='all',ledgerFilter='all',reportPeriod='monthly',dashPeriod='monthly',tagadaFilter='all';
+let currentTab='home',currentFilter='all',ledgerFilter='all',reportPeriod='monthly',dashPeriod='daily',tagadaFilter='all';
 function goTab(t,filter){
   currentTab=t;
   if(filter)currentFilter=filter;
@@ -567,11 +567,13 @@ async function pickFromContacts(){
       }
       const inp=document.getElementById('j_party');
       const ph=document.getElementById('j_phone');
-      if(inp&&name)inp.value=name;
-      if(ph&&phone)ph.value=phone;
+      if(inp&&name){inp.value=name;inp.dispatchEvent(new Event('input'));}
+      // fix #4: always set phone field, even if empty string initially
+      if(ph){ph.value=phone||'';ph.focus();ph.blur();}
       J.party=name;J.phone=phone;
-      document.getElementById('suggestList').style.display='none';
-      showToast('যোগাযোগ যোগ করা হয়েছে ✓');
+      // hide suggest list
+      const sl=document.getElementById('suggestList');if(sl)sl.style.display='none';
+      showToast(phone?'নাম ও নম্বর যোগ হয়েছে ✓':'নাম যোগ হয়েছে (নম্বর নেই)','#16a34a');
     }
   }catch(e){
     showToast('ফোনবুক অ্যাক্সেস করা যায়নি','#dc2626');
@@ -776,7 +778,7 @@ function renderHome(el){
   // fix #1: period-based filtering
   let dashStart,dashEnd=today(),dashLabel='';
   const now=new Date();
-  if(dashPeriod==='daily'){dashStart=today();dashLabel='আজকের';}
+  if(dashPeriod==='daily'||dashPeriod===''){dashStart=today();dashLabel='আজকের';}
   else if(dashPeriod==='weekly'){const d=new Date(now);d.setDate(d.getDate()-6);dashStart=d.toISOString().split('T')[0];dashLabel='সাপ্তাহিক';}
   else{dashStart=curMonth()+'-01';const[yr2,mo2]=curMonth().split('-');dashLabel=MONTHS_S[parseInt(mo2)-1]+' '+yr2;}
 
@@ -788,7 +790,15 @@ function renderHome(el){
   const nE=cmT.filter(t=>t.type==='expense'&&t.subtype==='nogod').reduce((a,b)=>a+b.amount,0);
   const bE=cmT.filter(t=>t.type==='expense'&&t.subtype==='baki').reduce((a,b)=>a+b.amount,0);
   const tE=nE+bE;
-  const nM=nI-nE,bM=bI-bE,net=nM+bM;
+  // fix #3: মুনাফা = বিক্রয় - বিক্রিত পণ্যের ক্রয়মূল্য - অন্যান্য ব্যয়
+  const totalCostOfGoods=cmT.filter(t=>t.type==='income'&&t.costPrice>0).reduce((a,b)=>a+(b.costPrice||0),0);
+  const nogodIncome=cmT.filter(t=>t.type==='income'&&t.subtype==='nogod');
+  const bakiIncome=cmT.filter(t=>t.type==='income'&&t.subtype==='baki');
+  const nogodCOGS=nogodIncome.reduce((a,b)=>a+(b.costPrice||0),0);
+  const bakiCOGS=bakiIncome.reduce((a,b)=>a+(b.costPrice||0),0);
+  const nM=nI-nogodCOGS-nE;
+  const bM=bI-bakiCOGS-bE;
+  const net=tI-totalCostOfGoods-tE;
   // fix #8: receivable = আমি পাব, payable = আমি দেব
   const pRec=txns.filter(t=>t.type==='receivable'&&!t.settled);
   const pPay=txns.filter(t=>t.type==='payable'&&!t.settled);
@@ -798,13 +808,12 @@ function renderHome(el){
   const tdI=txns.filter(t=>t.type==='income'&&t.date===td).reduce((a,b)=>a+b.amount,0);
   const tdE=txns.filter(t=>t.type==='expense'&&t.date===td).reduce((a,b)=>a+b.amount,0);
   const overdue=txns.filter(t=>(t.type==='receivable'||t.type==='payable')&&!t.settled&&t.dueDate&&t.dueDate<td);
-  const [yr,mo]=cm.split('-');
-  const mLabel=`${MONTHS_S[parseInt(mo)-1]} ${yr}`;
+
 
   el.innerHTML=`
-  <!-- fix #1: period filter -->
-  <div class="filter-row" style="margin-bottom:8px">
-    ${[['📅 আজকের','daily'],['📆 সাপ্তাহিক','weekly'],['🗓️ মাসিক','monthly']].map(([l,v])=>`<button onclick="dashPeriod='${v}';renderContent()" class="fbtn${dashPeriod===v?' active':''}">${l}</button>`).join('')}
+  <!-- fix #1: period filter full width -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px">
+    ${[['📅 আজকের','daily'],['📆 সাপ্তাহিক','weekly'],['🗓️ মাসিক','monthly']].map(([l,v])=>`<button onclick="dashPeriod='${v}';renderContent()" style="border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid ${dashPeriod===v?'#16a34a':'var(--border2)'};color:${dashPeriod===v?'#16a34a':'var(--sub)'};background:${dashPeriod===v?'rgba(22,163,74,.1)':'var(--glass2)'};text-align:center">${l}</button>`).join('')}
   </div>
   <div class="gc" style="padding:12px;margin-bottom:0">
     <div style="padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
@@ -827,21 +836,6 @@ function renderHome(el){
     ${miniCard('linear-gradient(135deg,#fecaca,#fca5a5)','#7f1d1d','#991b1b','🔴 মোট ব্যয়',BDT(tE),'💵 নগদ',BDT(nE),'📝 বাকি',BDT(bE),"goTab('history','expense')")}
     ${miniCard('linear-gradient(135deg,#99f6e4,#5eead4)','#134e4a','#0f766e','🔵 পাওনা বাকি',BDT(tRec),'','' ,pRec.length+' গ্রাহক','',"goTab('history','receivable')")}
     ${miniCard('linear-gradient(135deg,#fde68a,#fcd34d)','#78350f','#92400e','🟡 দেনা বাকি',BDT(tPay),'','',pPay.length+' সরবরাহকারী','',"goTab('history','payable')")}
-  </div>
-  ${divider('আজকের হিসাব')}
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:0">
-    <div style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);border-radius:13px;padding:11px 12px">
-      <div style="font-size:12px;font-weight:800;color:#16a34a;margin-bottom:4px">আজ আয়</div>
-      <div style="font-size:17px;font-weight:900;color:#065f46">${BDT(tdI)}</div>
-    </div>
-    <div style="background:linear-gradient(135deg,#fce7f3,#fbcfe8);border-radius:13px;padding:11px 12px">
-      <div style="font-size:12px;font-weight:800;color:#be185d;margin-bottom:4px">আজ ব্যয়</div>
-      <div style="font-size:17px;font-weight:900;color:#831843">${BDT(tdE)}</div>
-    </div>
-    <div style="background:linear-gradient(135deg,${tdI-tdE>=0?'#ede9fe,#ddd6fe':'#fee2e2,#fecaca'});border-radius:13px;padding:11px 12px">
-      <div style="font-size:12px;font-weight:800;color:${tdI-tdE>=0?'#6d28d9':'#991b1b'};margin-bottom:4px">আজ লাভ</div>
-      <div style="font-size:17px;font-weight:900;color:${tdI-tdE>=0?'#4c1d95':'#7f1d1d'}">${BDT(tdI-tdE)}</div>
-    </div>
   </div>
   ${divider('দ্রুত কাজ')}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:0">
