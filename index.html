@@ -17,42 +17,30 @@
    ════════════════════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 :root{
-  --bg:#eef2ff;
-  --glass:rgba(255,255,255,0.68);
-  --glass2:rgba(255,255,255,0.45);
-  --glass3:rgba(255,255,255,0.88);
-  --border:rgba(99,102,241,0.12);
-  --border2:rgba(99,102,241,0.22);
-  --text:#1e1b4b;--sub:#6b7280;--sub2:#9ca3af;
-  --blur:blur(18px);--blur2:blur(28px);
-  --shadow:0 4px 20px rgba(99,102,241,0.10);
-  --shadow2:0 8px 36px rgba(99,102,241,0.16);
+  --bg:#ffffff;
+  --glass:rgba(255,255,255,0.92);
+  --glass2:rgba(255,255,255,0.70);
+  --glass3:#ffffff;
+  --border:rgba(0,0,0,0.08);
+  --border2:rgba(0,0,0,0.12);
+  --text:#1a1a1a;--sub:#6b7280;--sub2:#9ca3af;
+  --blur:blur(20px);--blur2:blur(28px);
+  --shadow:0 2px 12px rgba(0,0,0,0.06);
+  --shadow2:0 4px 20px rgba(0,0,0,0.10);
   --radius:16px;
 }
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+html,body{height:100%;overflow:hidden;background:#ffffff;color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
 
-/* LIGHT GRADIENT BACKGROUND */
-body::before{content:'';position:fixed;inset:0;z-index:0;
-  background:linear-gradient(135deg,#e0e7ff 0%,#fce7f3 28%,#ecfdf5 60%,#fefce8 100%)}
-
-/* ANIMATED BLOBS */
-.blob-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.blob{position:absolute;border-radius:50%;filter:blur(55px);animation:bF 9s ease-in-out infinite}
-.b1{width:280px;height:280px;background:rgba(139,92,246,.18);top:-90px;left:-70px;animation-delay:0s}
-.b2{width:240px;height:240px;background:rgba(236,72,153,.15);top:30%;right:-70px;animation-delay:2.5s}
-.b3{width:210px;height:210px;background:rgba(6,182,212,.15);bottom:28%;left:-50px;animation-delay:5s}
-.b4{width:190px;height:190px;background:rgba(16,185,129,.15);bottom:-55px;right:18%;animation-delay:7s}
-@keyframes bF{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-16px) scale(1.04)}}
+/* CLEAN WHITE BACKGROUND */
 
 /* APP SHELL */
-#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;height:100dvh}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 
 /* TOPBAR */
-#topbar{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
-  border-bottom:1px solid var(--border2);padding:11px 16px;
+#topbar{background:#ffffff;border-bottom:1px solid var(--border2);padding:11px 16px;
   padding-top:max(11px,env(safe-area-inset-top));
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
-  box-shadow:0 2px 12px rgba(99,102,241,0.08)}
+  box-shadow:var(--shadow)}
 .shop-name{font-weight:900;font-size:16px;color:var(--text)}
 .shop-badge{background:linear-gradient(135deg,#16a34a,#15803d);border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:#fff;margin-left:6px}
 .icon-btn{background:var(--glass2);backdrop-filter:var(--blur);border:1px solid var(--border2);color:var(--sub);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:15px;font-family:inherit;display:flex;align-items:center;justify-content:center}
@@ -79,6 +67,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 
 /* GLASS CARD */
 .gc{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--border2);border-radius:var(--radius);box-shadow:var(--shadow)}
+.qbtn-w{border-radius:10px;padding:10px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid var(--border2);color:var(--text);background:rgba(0,0,0,.03);text-align:left;width:100%;transition:all .1s}
+.qbtn-w:active{background:rgba(0,0,0,.07)}
 
 /* NET MUNAFA HERO */
 .net-hero{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
@@ -253,9 +243,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 </head>
 <body>
 
-<!-- BLOBS -->
-<div class="blob-bg">
-  <div class="blob b1"></div><div class="blob b2"></div>
+<div class="blob b2"></div>
   <div class="blob b3"></div><div class="blob b4"></div>
 </div>
 
@@ -675,6 +663,44 @@ function confirmPartialPay(id){
 function settleTxn(id){txns=txns.map(t=>t.id===id?{...t,settled:true,paidAmount:t.amount}:t);save();renderContent();showToast('সম্পন্ন ✓');}
 function deleteTxn(id){if(!confirm('মুছে ফেলবেন?'))return;txns=txns.filter(t=>t.id!==id);save();updateTopbar();renderContent();showToast('মুছে ফেলা হয়েছে','#dc2626');}
 
+function editTxn(id){
+  const t=txns.find(x=>x.id===id);if(!t)return;
+  const overlay=document.createElement('div');
+  overlay.id='editOverlay';
+  overlay.style.cssText='position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;backdrop-filter:blur(6px)';
+  const info=TINFO[t.type];
+  overlay.innerHTML=`<div style="background:var(--glass3,#fff);border-radius:24px 24px 0 0;width:100%;padding:20px;border-top:1px solid var(--border2);padding-bottom:max(20px,env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto">
+    <div style="font-weight:800;font-size:16px;color:var(--text);margin-bottom:4px">✏️ এডিট করুন</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:16px">${info.icon} ${info.label} — ${t.party||t.category||''}</div>
+    <div class="j-field"><label>পরিমাণ (৳)</label>
+      <input class="j-inp" type="number" id="edit_amt" value="${t.amount}" inputmode="numeric"/></div>
+    <div class="j-field"><label>তারিখ</label>
+      <input class="j-inp" type="date" id="edit_date" value="${t.date}"/></div>
+    <div class="j-field"><label>নোট</label>
+      <input class="j-inp" id="edit_note" value="${t.note||''}"/></div>
+    ${t.party?`<div class="j-field"><label>পার্টি</label>
+      <input class="j-inp" id="edit_party" value="${t.party}"/></div>
+    <div class="j-field"><label>ফোন</label>
+      <input class="j-inp" type="tel" id="edit_phone" value="${t.phone||''}" inputmode="tel"/></div>`:'' }
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <button onclick="document.getElementById('editOverlay').remove()" style="background:var(--glass2,#f0f0f0);border:1px solid var(--border2);border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--sub)">বাতিল</button>
+      <button onclick="saveEdit('${id}')" style="background:linear-gradient(135deg,#16a34a,#15803d);border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:#fff">✓ সংরক্ষণ</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function saveEdit(id){
+  const amt=parseInt(document.getElementById('edit_amt')?.value)||0;
+  const date=document.getElementById('edit_date')?.value||today();
+  const note=document.getElementById('edit_note')?.value||'';
+  const party=document.getElementById('edit_party')?.value||'';
+  const phone=document.getElementById('edit_phone')?.value||'';
+  if(amt<=0){showToast('সঠিক পরিমাণ দিন','#dc2626');return;}
+  txns=txns.map(t=>t.id===id?{...t,amount:amt,date,note,party:party||t.party,phone:phone||t.phone}:t);
+  save();document.getElementById('editOverlay')?.remove();renderContent();showToast('আপডেট হয়েছে ✓');
+}
+
 // ─── SETTINGS ─────────────────────────────────────────
 function openDetail(type){
   document.getElementById('detailOverlay').classList.add('open');
@@ -731,11 +757,8 @@ function txCard(t){
         ${t.paidAmount>0&&!t.settled?`আদায়: ${BDT(t.paidAmount)} · বাকি: ${BDT(remaining)}`:''}
       </div>`:''}
       <div class="act-row">
-        ${canSettle?`<button class="a-btn ${t.type==='receivable'?'settle-btn':'adai-btn'}" onclick="settleTxn('${t.id}')">${sLabel}</button>`:''}
-        ${canSettle?`<button class="a-btn" style="border-color:#7c3aed;color:#7c3aed;background:rgba(124,58,237,.08)" onclick="partialPay('${t.id}')">৳ আংশিক</button>`:''}
-        ${canSettle&&hasPhone?`<button class="a-btn wa-btn" onclick="sendWA('${t.phone}','${t.party}',${remaining},'${t.dueDate||''}','${t.type}')">📱</button>`:''}
-        ${canSettle&&hasPhone?`<button class="a-btn sms-btn" onclick="sendSMS('${t.phone}','${t.party}',${remaining},'${t.dueDate||''}','${t.type}')">💬</button>`:''}
-        <button class="a-btn del-btn" onclick="deleteTxn('${t.id}')">✕</button>
+        <button class="a-btn" style="border-color:#2563eb;color:#2563eb;background:rgba(37,99,235,.08)" onclick="editTxn('${t.id}')">✏️ এডিট</button>
+        <button class="a-btn del-btn" onclick="deleteTxn('${t.id}')">🗑️ মুছুন</button>
       </div>
     </div>
     <div class="tx-right">
@@ -826,27 +849,37 @@ function renderHome(el){
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      ${miniCard('linear-gradient(135deg,#d1fae5,#a7f3d0)','#065f46','#166534','💵 নগদ মুনাফা',BDT(nM),'আয়',BDT(nI),'ব্যয়',BDT(nE))}
-      ${miniCard('linear-gradient(135deg,#dbeafe,#bfdbfe)','#1e3a8a','#1d4ed8','📝 বাকি মুনাফা',BDT(bM),'আয়',BDT(bI),'ব্যয়',BDT(bE))}
+      ${miniCard('rgba(0,0,0,.03)','#1a1a1a','#16a34a','💵 নগদ মুনাফা',BDT(nM),'আয়',BDT(nI),'ব্যয়',BDT(nE))}
+      ${miniCard('rgba(0,0,0,.03)','#1a1a1a','#2563eb','📝 বাকি মুনাফা',BDT(bM),'আয়',BDT(bI),'ব্যয়',BDT(bE))}
     </div>
   </div>
   ${divider('আয় · ব্যয় · পাওনা · দেনা')}
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0">
-    ${miniCard('linear-gradient(135deg,#bbf7d0,#86efac)','#14532d','#166534','💚 মোট আয়',BDT(tI),'💵 নগদ',BDT(nI),'📝 বাকি',BDT(bI),"goTab('history','income')")}
-    ${miniCard('linear-gradient(135deg,#fecaca,#fca5a5)','#7f1d1d','#991b1b','🔴 মোট ব্যয়',BDT(tE),'💵 নগদ',BDT(nE),'📝 বাকি',BDT(bE),"goTab('history','expense')")}
-    ${miniCard('linear-gradient(135deg,#99f6e4,#5eead4)','#134e4a','#0f766e','🔵 পাওনা বাকি',BDT(tRec),'','' ,pRec.length+' গ্রাহক','',"goTab('history','receivable')")}
-    ${miniCard('linear-gradient(135deg,#fde68a,#fcd34d)','#78350f','#92400e','🟡 দেনা বাকি',BDT(tPay),'','',pPay.length+' সরবরাহকারী','',"goTab('history','payable')")}
+  <div class="gc" style="padding:12px;margin-bottom:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${miniCard('rgba(0,0,0,.03)','#1a1a1a','#16a34a','💚 মোট আয়',BDT(tI),'💵 নগদ',BDT(nI),'📝 বাকি',BDT(bI),"goTab('history','income')")}
+      ${miniCard('rgba(0,0,0,.03)','#1a1a1a','#dc2626','🔴 মোট ব্যয়',BDT(tE),'💵 নগদ',BDT(nE),'📝 বাকি',BDT(bE),"goTab('history','expense')")}
+      ${miniCard('rgba(0,0,0,.03)','#1a1a1a','#2563eb','🔵 পাওনা বাকি',BDT(tRec),'','',pRec.length+' গ্রাহক','',"goTab('history','receivable')")}
+      ${miniCard('rgba(0,0,0,.03)','#1a1a1a','#b45309','🟡 দেনা বাকি',BDT(tPay),'','',pPay.length+' সরবরাহকারী','',"goTab('history','payable')")}
+    </div>
   </div>
   ${divider('দ্রুত কাজ')}
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:0">
-    ${[
-      {l:'💵 নগদ বিক্রয়',c:'#16a34a',bg:'rgba(22,163,74,.08)',  t:'income', s:'nogod'},
-      {l:'📝 বাকি বিক্রয়',c:'#0f766e',bg:'rgba(15,118,110,.08)', t:'income', s:'baki'},
-      {l:'💵 নগদ ক্রয়',   c:'#dc2626',bg:'rgba(220,38,38,.08)',  t:'expense',s:'nogod'},
-      {l:'📝 বাকিতে ক্রয়',c:'#b45309',bg:'rgba(180,83,9,.08)',   t:'expense',s:'baki'},
-    ].map(q=>`<button onclick="quickAdd('${q.t}','${q.s}')" style="border-radius:12px;padding:10px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid ${q.c};color:${q.c};background:${q.bg}">${q.l}</button>`).join('')}
+  <div class="gc" style="padding:12px;margin-bottom:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <button onclick="quickAdd('income','nogod')" class="qbtn-w">💵 নগদ বিক্রয়</button>
+        <button onclick="quickAdd('income','baki')" class="qbtn-w">📝 বাকি বিক্রয়</button>
+        <button onclick="quickAddMixed('income')" class="qbtn-w">🔀 সম্মিলিত বিক্রয়</button>
+        <button onclick="quickSettle('receivable')" class="qbtn-w">✅ পাওনা পরিশোধ</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <button onclick="quickAdd('expense','nogod')" class="qbtn-w">💵 নগদ ক্রয়</button>
+        <button onclick="quickAdd('expense','baki')" class="qbtn-w">📝 বাকিতে ক্রয়</button>
+        <button onclick="quickAddMixed('expense')" class="qbtn-w">🔀 সম্মিলিত ক্রয়</button>
+        <button onclick="quickSettle('payable')" class="qbtn-w">✅ দেনা আদায়</button>
+      </div>
+    </div>
   </div>
-  ${overdue.length?`<div style="margin-top:10px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.25);border-radius:12px;padding:10px 13px">
+  ${overdue.length?`<div style="margin-top:10px;background:rgba(0,0,0,.03);border:1px solid rgba(220,38,38,.3);border-radius:12px;padding:10px 13px">
     <div style="font-weight:700;color:#dc2626;font-size:12px;margin-bottom:4px">⚠️ মেয়াদ পেরিয়ে গেছে — ${overdue.length} টি</div>
     ${overdue.slice(0,3).map(t=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#dc2626"><span>${t.party||'—'} (${TINFO[t.type]?.label})</span><span style="font-weight:700">${BDT(t.amount-(t.paidAmount||0))}</span></div>`).join('')}
     <button onclick="goTab('tagada')" style="margin-top:8px;width:100%;background:#dc2626;border:none;border-radius:8px;padding:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📣 তাগাদা দিন</button>
@@ -866,6 +899,176 @@ function quickAdd(type,subtype){
 }
 
 // ─── HISTORY ─────────────────────────────────────────
+function quickAddMixed(type){
+  // সম্মিলিত = partial cash + partial credit
+  J={step:0,amount:0,costPrice:0,type,subtype:'nogod',party:'',phone:'',note:'',date:today(),dueDate:'',category:type==='income'?'বিক্রয় (Sales)':'পণ্য ক্রয়'};
+  numStr='';costStr='';numMode='amount';
+  document.getElementById('journeyOverlay').classList.add('open');
+  document.getElementById('jStep').textContent='সম্মিলিত';
+  const lbl=type==='income'?'🔀 সম্মিলিত বিক্রয়':'🔀 সম্মিলিত ক্রয়';
+  const hintText=type==='income'?'মোট বিক্রয়মূল্য দিন (পরে নগদ ও বাকি ভাগ করবেন)':'মোট ক্রয়মূল্য দিন (পরে নগদ ও বাকি ভাগ করবেন)';
+  document.getElementById('jBody').innerHTML=`<div class="j-q">${lbl}</div>
+  <div class="j-hint">${hintText}</div>
+  <div class="num-display"><div class="num-amount" id="numDisp">০</div><div class="num-sub-text">মোট পরিমাণ (৳)</div></div>
+  <div class="num-grid">${[7,8,9,4,5,6,1,2,3].map(n=>`<button class="num-btn" onclick="nPress('${n}')">${n}</button>`).join('')}<button class="num-btn" onclick="nPress('00')">00</button><button class="num-btn" onclick="nPress('0')">0</button><button class="num-btn del" onclick="nDel()">⌫</button></div>
+  <button class="j-next" id="jNext" onclick="showMixedSplit('${type}')" disabled>পরবর্তী →</button>`;
+}
+
+function showMixedSplit(type){
+  if(J.amount===0)return;
+  const body=document.getElementById('jBody');
+  const lbl=type==='income'?'বিক্রয়':'ক্রয়';
+  body.innerHTML=`<div class="j-q">নগদ ও বাকি ভাগ করুন</div>
+  <div class="j-hint">মোট: ${BDT(J.amount)}</div>
+  <div class="j-field"><label>নগদ ${lbl} পরিমাণ</label>
+    <input class="j-inp" type="number" id="mix_cash" placeholder="০" inputmode="numeric" oninput="updateMixBaki(${J.amount})"/>
+  </div>
+  <div class="j-field"><label>বাকি ${lbl} পরিমাণ</label>
+    <input class="j-inp" type="number" id="mix_baki" placeholder="০" inputmode="numeric" readonly style="background:var(--card2)"/>
+  </div>
+  ${type==='income'?`<div class="j-field"><label>পাওনাদারের নাম</label>
+    <input class="j-inp" id="mix_party" placeholder="গ্রাহকের নাম"/></div>
+  <div class="j-field"><label>ফোন নম্বর</label>
+    <input class="j-inp" type="tel" id="mix_phone" placeholder="01XXXXXXXXX" inputmode="tel"/></div>`:''}
+  <div class="j-field"><label>তারিখ</label><input class="j-inp" type="date" id="mix_date" value="${today()}"/></div>
+  <div class="j-field"><label>নোট</label><input class="j-inp" id="mix_note" placeholder="মন্তব্য..."/></div>
+  <button class="j-btn" onclick="saveMixed('${type}')">সংরক্ষণ করুন ✓</button>`;
+}
+
+function updateMixBaki(total){
+  const cash=parseInt(document.getElementById('mix_cash')?.value)||0;
+  const baki=document.getElementById('mix_baki');
+  if(baki)baki.value=Math.max(0,total-cash);
+}
+
+function saveMixed(type){
+  const cash=parseInt(document.getElementById('mix_cash')?.value)||0;
+  const baki=parseInt(document.getElementById('mix_baki')?.value)||0;
+  const party=document.getElementById('mix_party')?.value?.trim()||'';
+  const phone=document.getElementById('mix_phone')?.value?.trim()||'';
+  const date=document.getElementById('mix_date')?.value||today();
+  const note=document.getElementById('mix_note')?.value||'';
+  if(cash+baki!==J.amount){showToast('নগদ + বাকি মোট মেলেনি','#dc2626');return;}
+  if(baki>0&&!party){showToast('বাকির জন্য নাম দিন','#dc2626');return;}
+  // save cash part
+  if(cash>0)txns.unshift({id:uid(),type,subtype:'nogod',amount:cash,costPrice:0,date,note,party:'',phone:'',dueDate:'',category:type==='income'?'বিক্রয় (Sales)':'পণ্য ক্রয়',settled:true,paidAmount:cash});
+  // save baki part
+  if(baki>0){
+    const bakiItem={id:uid(),type,subtype:'baki',amount:baki,costPrice:0,date,note,party,phone,dueDate:'',category:type==='income'?'বিক্রয় (Sales)':'পণ্য ক্রয়',settled:false,paidAmount:0};
+    txns.unshift(bakiItem);
+    const syncType=type==='income'?'payable':'receivable';
+    txns.unshift({id:uid(),type:syncType,subtype:'baki',amount:baki,costPrice:0,date,note:type==='income'?'বাকি বিক্রয়':'বাকিতে ক্রয়',party,phone,dueDate:'',category:'',settled:false,paidAmount:0,linkedId:bakiItem.id});
+  }
+  save();updateTopbar();
+  closeJourney();renderContent();
+  showToast('সম্মিলিত '+( type==='income'?'বিক্রয়':'ক্রয়')+' সংরক্ষিত ✓');
+}
+
+// ─── QUICK SETTLE ────────────────────────────────────
+// পাওনা পরিশোধ বা দেনা আদায় — পার্টি সিলেক্ট করে পরিমাণ দেওয়া যাবে
+function quickSettle(type){
+  // type: 'receivable' = পাওনা পরিশোধ, 'payable' = দেনা আদায়
+  const label = type==='receivable' ? 'পাওনা পরিশোধ' : 'দেনা আদায়';
+  const icon  = type==='receivable' ? '🔵' : '🟠';
+
+  // Build pending parties list for this type
+  const parties={};
+  txns.filter(t=>t.type===type&&!t.settled).forEach(t=>{
+    if(!t.party)return;
+    if(!parties[t.party])parties[t.party]={name:t.party,phone:t.phone||'',total:0,entries:[]};
+    parties[t.party].total += t.amount-(t.paidAmount||0);
+    parties[t.party].entries.push(t);
+  });
+  const list=Object.values(parties).filter(p=>p.total>0);
+
+  const overlay=document.createElement('div');
+  overlay.id='settleOverlay';
+  overlay.style.cssText='position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;backdrop-filter:blur(6px)';
+
+  const partyOptions = list.length
+    ? list.map(p=>`<div class="suggest-item" onclick="pickSettleParty('${p.name}',${p.total},'${type}')" style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:700">${icon} ${p.name}</span>
+        <span style="color:#ea580c;font-weight:700">${BDT(p.total)}</span>
+      </div>`).join('')
+    : `<div style="text-align:center;padding:16px;color:var(--sub)">কোনো বাকি নেই ✅</div>`;
+
+  overlay.innerHTML=`<div id="settleSheet" style="background:#fff;border-radius:24px 24px 0 0;width:100%;padding:20px;border-top:1px solid rgba(0,0,0,.1);padding-bottom:max(20px,env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto">
+    <div style="font-weight:800;font-size:16px;color:#1a1a1a;margin-bottom:4px">${icon} ${label}</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:14px">পার্টি বেছে নিন</div>
+    <div id="settlePartyList" style="border:1.5px solid rgba(0,0,0,.1);border-radius:12px;overflow:hidden;margin-bottom:14px">
+      ${partyOptions}
+    </div>
+    <div id="settleAmtSection" style="display:none">
+      <div class="j-field"><label>পার্টির নাম</label>
+        <input class="j-inp" id="settle_party_name" readonly style="background:rgba(0,0,0,.03)"/>
+      </div>
+      <div class="j-field"><label>বাকি পরিমাণ</label>
+        <input class="j-inp" id="settle_remaining" readonly style="background:rgba(0,0,0,.03)"/>
+      </div>
+      <div class="j-field"><label>পরিশোধের পরিমাণ</label>
+        <input class="j-inp" type="number" id="settle_amount" placeholder="টাকার পরিমাণ" inputmode="numeric"/>
+      </div>
+      <div class="j-field"><label>তারিখ</label>
+        <input class="j-inp" type="date" id="settle_date" value="${today()}"/>
+      </div>
+      <div class="j-field"><label>নোট (ঐচ্ছিক)</label>
+        <input class="j-inp" id="settle_note" placeholder="মন্তব্য..."/>
+      </div>
+      <button onclick="confirmQuickSettle('${type}')" style="width:100%;background:linear-gradient(135deg,#16a34a,#15803d);border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;color:#fff;cursor:pointer;font-family:inherit">✓ ${label} করুন</button>
+    </div>
+    <button onclick="document.getElementById('settleOverlay').remove()" style="width:100%;background:transparent;border:1px solid rgba(0,0,0,.12);border-radius:12px;padding:12px;font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;font-family:inherit;margin-top:8px">বাতিল</button>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function pickSettleParty(name, total, type){
+  // Show amount section with party details
+  document.getElementById('settlePartyList').style.display='none';
+  document.getElementById('settleAmtSection').style.display='block';
+  const nameInp=document.getElementById('settle_party_name');
+  const remInp=document.getElementById('settle_remaining');
+  const amtInp=document.getElementById('settle_amount');
+  if(nameInp) nameInp.value=name;
+  if(remInp) remInp.value=BDT(total)+' টাকা';
+  if(amtInp){ amtInp.value=total; amtInp.max=total; }
+  // store for confirmQuickSettle
+  window._settleParty={name,total,type};
+}
+
+function confirmQuickSettle(type){
+  const sp=window._settleParty;
+  if(!sp){showToast('পার্টি বেছে নিন','#dc2626');return;}
+  const amt=parseInt(document.getElementById('settle_amount')?.value)||0;
+  const date=document.getElementById('settle_date')?.value||today();
+  const note=document.getElementById('settle_note')?.value||'';
+  if(amt<=0||amt>sp.total){showToast('সঠিক পরিমাণ দিন','#dc2626');return;}
+
+  // Find all unsettled entries for this party+type
+  const entries=txns.filter(t=>t.type===type&&!t.settled&&t.party===sp.name);
+  let remaining=amt;
+  txns=txns.map(t=>{
+    if(t.type!==type||t.settled||t.party!==sp.name||remaining<=0)return t;
+    const due=t.amount-(t.paidAmount||0);
+    const pay=Math.min(due,remaining);
+    remaining-=pay;
+    const newPaid=(t.paidAmount||0)+pay;
+    return {...t,paidAmount:newPaid,settled:newPaid>=t.amount};
+  });
+
+  // Record as income (পাওনা আদায়) or expense (দেনা পরিশোধ) entry
+  const recType=type==='receivable'?'income':'expense';
+  txns.unshift({
+    id:uid(),type:recType,subtype:'nogod',amount:amt,costPrice:0,
+    date,note:(type==='receivable'?'পাওনা আদায়':'দেনা পরিশোধ')+(note?' — '+note:''),
+    party:sp.name,phone:'',dueDate:'',category:'',settled:true,paidAmount:amt
+  });
+
+  save();
+  document.getElementById('settleOverlay')?.remove();
+  renderContent();
+  showToast(BDT(amt)+' '+(type==='receivable'?'আদায়':'পরিশোধ')+' সম্পন্ন ✓');
+}
+
 function renderHistory(el){
   const filtered=currentFilter==='all'?txns:txns.filter(t=>t.type===currentFilter);
   el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -919,30 +1122,17 @@ function renderLedger(el){
         </div>
       </div>
       <div style="border-top:1px solid var(--border);padding:10px 14px;display:none" id="lb-${pi}">
-        ${p.phone?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
-          <button class="wa-btn" style="padding:8px;font-size:11px;border-radius:8px;text-align:center" onclick="sendWA('${p.phone}','${p.name}',${Math.abs(nr)},'','${nr>0?'receivable':'payable'}')">📱 WA</button>
-          <button class="sms-btn" style="padding:8px;font-size:11px;border-radius:8px;text-align:center" onclick="sendSMS('${p.phone}','${p.name}',${Math.abs(nr)},'','${nr>0?'receivable':'payable'}')">💬 SMS</button>
-          ${nr<0?`<button onclick="openSupplierOrder('${p.name}','${p.phone}')" style="background:rgba(124,58,237,.12);color:#7c3aed;border:1px solid #7c3aed;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">📦 অর্ডার</button>`:
-          `<button onclick="partialPay('${p.entries.filter(e=>e.type==='receivable'&&!e.settled)[0]?.id||''}')" style="background:rgba(124,58,237,.12);color:#7c3aed;border:1px solid #7c3aed;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">৳ আংশিক</button>`}
-        </div>`:''}
         ${p.entries.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(e=>{
-          const canS=!e.settled;
           const rem=e.amount-(e.paidAmount||0);
-          // fix #8: receivable = আদায়, payable = পরিশোধ
-          const sL=e.type==='receivable'?'✓ আদায়':'✓ পরিশোধ';
-          return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+          return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
             <div>
               <span class="chip" style="color:${TINFO[e.type].color};background:${TINFO[e.type].bg}">${TINFO[e.type].label}</span>
               <span style="font-size:10px;color:var(--sub);margin-left:5px">${e.date}${e.note?' · '+e.note:''}</span>
-              ${e.paidAmount>0&&!e.settled?`<div style="font-size:10px;color:#7c3aed">আদায়: ${BDT(e.paidAmount)} · বাকি: ${BDT(rem)}</div>`:''}
+              ${e.paidAmount>0&&!e.settled?`<div style="font-size:10px;color:#7c3aed;margin-top:2px">আদায়: ${BDT(e.paidAmount)} · বাকি: ${BDT(rem)}</div>`:''}
             </div>
             <div style="text-align:right">
               <div style="font-weight:800;color:${TINFO[e.type].color};font-size:13px">${BDT(e.amount)}</div>
               <span class="chip" style="color:${e.settled?'#16a34a':'#ea580c'};background:${e.settled?'rgba(22,163,74,.12)':'rgba(234,88,12,.12)'}">${e.settled?(e.type==='receivable'?'আদায়':'পরিশোধ'):'বাকি'}</span>
-              ${canS?`<br><div style="display:flex;gap:4px;margin-top:3px;justify-content:flex-end">
-                <button class="${e.type==='receivable'?'settle-btn':'adai-btn'}" style="font-size:9px;padding:3px 7px" onclick="settleTxn('${e.id}');renderContent()">${sL}</button>
-                <button style="background:rgba(124,58,237,.1);color:#7c3aed;border:1px solid #7c3aed;border-radius:6px;font-size:9px;padding:3px 7px;cursor:pointer;font-family:inherit" onclick="partialPay('${e.id}')">৳</button>
-              </div>`:''}
             </div>
           </div>`;
         }).join('')}
@@ -971,40 +1161,29 @@ function renderTagada(el){
     <div style="font-weight:800;font-size:16px;color:var(--text)">📣 তাগাদা</div>
     <span style="font-size:12px;color:var(--sub)">${list.length} জন</span>
   </div>
-  <div class="filter-row" style="margin-bottom:10px">
-    ${[['সবাই','all'],['🔵 পাওনাদার','receivable'],['🟠 দেনাদার','payable']].map(([l,v])=>`<button onclick="tagadaFilter='${v}';renderContent()" class="fbtn${tagadaFilter===v?' active':''}">${l}</button>`).join('')}
+  <!-- fix #5: শুধু ২টা filter, full-width -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+    ${[['🔵 পাওনাদার','receivable'],['🟠 দেনাদার','payable']].map(([l,v])=>`<button onclick="tagadaFilter='${v}';renderContent()" style="border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid ${tagadaFilter===v?'#16a34a':'var(--border2)'};color:${tagadaFilter===v?'#16a34a':'var(--sub)'};background:${tagadaFilter===v?'rgba(22,163,74,.1)':'var(--glass2)'};text-align:center">${l}</button>`).join('')}
   </div>
 
-  ${!list.length?`<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">সবার হিসাব পরিষ্কার!</div></div>`:`
-
-  <!-- সবাইকে একসাথে তাগাদা -->
-  <div class="gc" style="padding:12px;margin-bottom:10px">
-    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">📢 সবাইকে একসাথে তাগাদা</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button onclick="tagadaAllWA()" style="background:rgba(22,163,74,.1);border:1px solid #16a34a;border-radius:10px;padding:11px;font-size:13px;font-weight:700;color:#16a34a;cursor:pointer;font-family:inherit">📱 সবাইকে WhatsApp</button>
-      <button onclick="tagadaAllSMS()" style="background:rgba(37,99,235,.1);border:1px solid #2563eb;border-radius:10px;padding:11px;font-size:13px;font-weight:700;color:#2563eb;cursor:pointer;font-family:inherit">💬 সবাইকে SMS</button>
-    </div>
-  </div>
-
-  <!-- আলাদা আলাদা তাগাদা -->
-  <div style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">আলাদা তাগাদা</div>
-  ${list.map(p=>`
-    <div class="gc" style="padding:12px 14px;margin-bottom:8px">
+  ${!list.length?`<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">হিসাব পরিষ্কার!</div></div>`:
+  list.map(p=>`
+    <div class="gc" style="padding:13px;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div>
           <div style="font-weight:800;font-size:14px;color:var(--text)">${p.name}</div>
-          <div style="font-size:10px;color:var(--sub)">📱 ${p.phone}</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">📱 ${p.phone}</div>
         </div>
         <div style="text-align:right">
-          ${p.rec>0?`<div style="color:#2563eb;font-size:12px;font-weight:700">পাওনা ${BDT(p.rec)}</div>`:''}
-          ${p.pay>0?`<div style="color:#ea580c;font-size:12px;font-weight:700">দেনা ${BDT(p.pay)}</div>`:''}
+          ${p.rec>0?`<div style="color:#2563eb;font-size:13px;font-weight:800">পাওনা ${BDT(p.rec)}</div>`:''}
+          ${p.pay>0?`<div style="color:#ea580c;font-size:13px;font-weight:800">দেনা ${BDT(p.pay)}</div>`:''}
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-        <button onclick="sendWA('${p.phone}','${p.name}',${p.rec>0?p.rec:p.pay},'${p.dueDate}','${p.rec>0?'receivable':'payable'}')" style="background:rgba(22,163,74,.1);border:1px solid #16a34a;border-radius:8px;padding:9px;font-size:12px;font-weight:700;color:#16a34a;cursor:pointer;font-family:inherit">📱 WhatsApp</button>
-        <button onclick="sendSMS('${p.phone}','${p.name}',${p.rec>0?p.rec:p.pay},'${p.dueDate}','${p.rec>0?'receivable':'payable'}')" style="background:rgba(37,99,235,.1);border:1px solid #2563eb;border-radius:8px;padding:9px;font-size:12px;font-weight:700;color:#2563eb;cursor:pointer;font-family:inherit">💬 SMS</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="sendWA('${p.phone}','${p.name}',${p.rec>0?p.rec:p.pay},'${p.dueDate}','${p.rec>0?'receivable':'payable'}')" style="background:rgba(22,163,74,.1);border:1px solid #16a34a;border-radius:10px;padding:10px;font-size:12px;font-weight:700;color:#16a34a;cursor:pointer;font-family:inherit;text-align:center">📱 WhatsApp</button>
+        <button onclick="sendSMS('${p.phone}','${p.name}',${p.rec>0?p.rec:p.pay},'${p.dueDate}','${p.rec>0?'receivable':'payable'}')" style="background:rgba(37,99,235,.1);border:1px solid #2563eb;border-radius:10px;padding:10px;font-size:12px;font-weight:700;color:#2563eb;cursor:pointer;font-family:inherit;text-align:center">💬 SMS</button>
       </div>
-    </div>`).join('')}`}`;
+    </div>`).join('')}`;
 }
 
 function tagadaAllWA(){
@@ -1117,8 +1296,8 @@ function renderReport(el){
     <div style="font-weight:800;font-size:16px;color:var(--text)">📊 রিপোর্ট</div>
     <select class="j-inp" style="width:auto;padding:6px 10px;font-size:12px" onchange="rMonth=this.value;renderContent()"></select>
   </div>
-  <div class="filter-row" style="margin-bottom:12px">
-    ${[['📅 আজকের','daily'],['📆 সাপ্তাহিক','weekly'],['🗓️ মাসিক','monthly']].map(([l,v])=>`<button onclick="reportPeriod='${v}';renderContent()" class="fbtn${reportPeriod===v?' active':''}">${l}</button>`).join('')}
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:10px">
+    ${[['📅 আজকের','daily'],['📆 সাপ্তাহিক','weekly'],['🗓️ মাসিক','monthly']].map(([l,v])=>`<button onclick="reportPeriod='${v}';renderContent()" style="border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid ${reportPeriod===v?'#16a34a':'var(--border2)'};color:${reportPeriod===v?'#16a34a':'var(--sub)'};background:${reportPeriod===v?'rgba(22,163,74,.1)':'var(--glass2)'};text-align:center">${l}</button>`).join('')}
   </div>
   <div class="gc" style="padding:12px;margin-bottom:0">
     <div style="padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
@@ -1130,8 +1309,8 @@ function renderReport(el){
       <div style="text-align:right;font-size:11px;color:var(--sub);line-height:2">আয়: <b style="color:#16a34a">${BDT(mI)}</b><br>ব্যয়: <b style="color:#dc2626">${BDT(mE)}</b></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      ${miniCard('linear-gradient(135deg,#d1fae5,#a7f3d0)','#065f46','#166534','💵 নগদ মুনাফা',BDT(mNP),'আয়',BDT(mNI),'ব্যয়',BDT(mNE))}
-      ${miniCard('linear-gradient(135deg,#dbeafe,#bfdbfe)','#1e3a8a','#1d4ed8','📝 বাকি মুনাফা',BDT(mBP),'আয়',BDT(mBI),'ব্যয়',BDT(mBE))}
+      ${miniCard('rgba(0,0,0,.03)','#1a1a1a','#16a34a','💵 নগদ মুনাফা',BDT(mNP),'আয়',BDT(mNI),'ব্যয়',BDT(mNE))}
+      ${miniCard('rgba(0,0,0,.03)','#1a1a1a','#2563eb','📝 বাকি মুনাফা',BDT(mBP),'আয়',BDT(mBI),'ব্যয়',BDT(mBE))}
     </div>
   </div>
   ${divider('চার্ট')}
